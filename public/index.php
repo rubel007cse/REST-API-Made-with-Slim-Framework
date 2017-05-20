@@ -84,13 +84,14 @@ function addEmployee($request) {
 
    $emp = json_decode($request->getBody());
     
-    $sql = "INSERT INTO library (book_id, book_name, book_isbn) VALUES (:id, :name, :isbn)";
+    $sql = "INSERT INTO library (book_id, book_name, book_isbn, book_category) VALUES (:id, :name, :isbn, :bcat)";
     try {
         $db = getConnection();
         $stmt = $db->prepare($sql);
         $stmt->bindParam("id", $emp->id);
         $stmt->bindParam("name", $emp->name);
         $stmt->bindParam("isbn", $emp->isbn);
+        $stmt->bindParam("bcat", $emp->bcat);
         $stmt->execute();
         $emp->id = $db->lastInsertId();
         $db = null;
