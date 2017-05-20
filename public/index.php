@@ -38,6 +38,8 @@ function getConnection() {
     return $dbh;
 }
 
+// ---------------- get all emp -------------
+
 function getEmployes($response) {
     $sql = "select * FROM library";
     try {
@@ -51,41 +53,34 @@ function getEmployes($response) {
     }
 }
 
-function addEmployee($request) {
-   
-   /* $request = \Slim\Slim::getInstance()->request();
-  	parse_str($request->getBody(),$update); 
-  	print_r($request->getBody());
-    
-    $sql = "INSERT INTO `library`(`book_id`, `book_name`, `book_isbn`)  VALUES (:id, :name, :isbn)";
-    try {
 
-    	//Validate your filed before insert in db
-            if(!is_array($update) || (!$update)) {
-                throw new Exception('Invalid data received');   
-            }
-            // put your require filed list here
-            if((!$update['id']) || (!$update['name']) || (!$update['isbn'])){
-                throw new Exception('Missing values for require fields');
-            }
+// ------------------ get a single app ------------------
 
+function getEmployee($request){
 
-        $db = getConnection();
-        $stmt = $db->prepare($sql);
-        $stmt->bindParam("id", $update['id']);
-        $stmt->bindParam("name", $update['name']);
-        $stmt->bindParam("isbn", $update['isbn']);
-        $stmt->execute();
-       // $update->id = $db->lastInsertId();
+ $get_id = $request->getAttribute('id');
+
+ //print_r($get_id);
+
+ $sql = "select * FROM library WHERE book_id = '$get_id'";
+
+  try {
+        $stmt = getConnection()->query($sql);
+        $wines = $stmt->fetchAll(PDO::FETCH_OBJ);
         $db = null;
-        echo "Shofol";
+        
+        return json_encode($wines);
     } catch(PDOException $e) {
         echo '{"error":{"text":'. $e->getMessage() .'}}';
     }
-    catch(Exception $e) {
-            //error_log($e->getMessage(), 3, '/var/tmp/php.log');
-            echo '{"error":{"text":'. $e->getMessage() .'}}'; 
-        }*/
+
+}
+
+
+// --------------------- adding emp ----------------------------
+
+function addEmployee($request) {
+   
 
    $emp = json_decode($request->getBody());
     
@@ -107,30 +102,40 @@ function addEmployee($request) {
 }
 
 
+function updateEmployee($request) {
+    $emp = json_decode($request->getBody());
+    $id = $request->getAttribute('id');
+    $sql = "UPDATE library SET book_name=:name, book_isbn=:isbn, book_category=:bcat WHERE book_id=:id";
+    try {
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam("name", $emp->name);
+        $stmt->bindParam("isbn", $emp->isbn);
+        $stmt->bindParam("bcat", $emp->bcat);
+        $stmt->bindParam("id", $id);
+        $stmt->execute();
+        $db = null;
+        echo json_encode($emp);
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}';
+    }
+}
 
 
-
-/*
-$app->get('/books', function() {
-
- require_once('db.php');
-
- $query = "select * from library order by book_id";
-
- $result = $conn->query($query);
-
- // var_dump($result);
-
- while ($row = $result->fetch_assoc()){
-
-$data[] = $row;
-
- }
-
- echo json_encode($data);
-
-});*/
-
+function deleteEmployee($request) {
+    $id = $request->getAttribute('id');
+    $sql = "DELETE FROM library WHERE book_id=:id";
+    try {
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam("id", $id);
+        $stmt->execute();
+        $db = null;
+        echo '{"error":{"text":"Successfully! deleted Records"}}';
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}';
+    }
+}
 
 
 
